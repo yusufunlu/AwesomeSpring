@@ -21,9 +21,16 @@ public class KafkaController {
     private KafkaAdmin kafkaAdmin;
 
     @GetMapping(value = "/{message}")
-    public String index(@PathVariable String message) {
+    public String send(@PathVariable String message) {
 
         kafkaProducerConfig.sendMessage(message);
+        return "Hello World";
+    }
+
+    @GetMapping(value = "/asyncSend/{message}")
+    public String asyncSend(@PathVariable String message) {
+
+        kafkaProducerConfig.asyncSend(message);
         return "Hello World";
     }
 

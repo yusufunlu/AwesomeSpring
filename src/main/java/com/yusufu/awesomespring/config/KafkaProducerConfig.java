@@ -1,7 +1,9 @@
 package com.yusufu.awesomespring.config;
 
+import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.admin.NewTopic;
 import org.apache.kafka.clients.producer.ProducerConfig;
+import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.springframework.boot.autoconfigure.kafka.KafkaProperties;
 import org.springframework.context.annotation.Bean;
@@ -9,10 +11,15 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.kafka.core.DefaultKafkaProducerFactory;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.core.ProducerFactory;
+import org.springframework.kafka.support.SendResult;
+import org.springframework.util.concurrent.ListenableFuture;
+import org.springframework.util.concurrent.ListenableFutureCallback;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 
+@Slf4j
 @Configuration
 public class KafkaProducerConfig {
 
@@ -52,6 +59,26 @@ public class KafkaProducerConfig {
     public void sendMessage(String message){
 
         kafkaTemplate().send(TOPIC,message);
+    }
+
+    public void asyncSend(String message) {
+        ListenableFuture<SendResult<String, String>> future = kafkaTemplate().send(TOPIC, message);
+        future.addCallback(new ListenableFutureCallback<SendResult<String, String>>() {
+            @Override
+            public void onSuccess(SendResult<String, String> result) {
+
+                System.out.println("Kafka Async Sending Success " +
+                        "\n\ttopic: "+ result.getProducerRecord().topic()+
+                        "\n\tmessage: "+ result.getProducerRecord().value()+
+                        "\n\toffset: "+ result.getRecordMetadata().offset()+
+                        "\n\tpartition: "+ result.getRecordMetadata().partition());
+            }
+
+            @Override
+            public void onFailure(Throwable ex) {
+                System.out.println("Kafka Async Sending Failed");
+            }
+        });
     }
 
 }
