@@ -62,21 +62,15 @@ public class KafkaProducerConfig {
     }
 
     public void asyncSend(String message) {
-        ListenableFuture<SendResult<String, String>> future = kafkaTemplate().send(TOPIC, message);
-        future.addCallback(new ListenableFutureCallback<SendResult<String, String>>() {
-            @Override
-            public void onSuccess(SendResult<String, String> result) {
 
-                System.out.println("Kafka Async Sending Success " +
-                        "\n\ttopic: "+ result.getProducerRecord().topic()+
-                        "\n\tmessage: "+ result.getProducerRecord().value()+
-                        "\n\toffset: "+ result.getRecordMetadata().offset()+
-                        "\n\tpartition: "+ result.getRecordMetadata().partition());
-            }
-
-            @Override
-            public void onFailure(Throwable ex) {
-                System.out.println("Kafka Async Sending Failed");
+        CompletableFuture<SendResult<String, String>> future = kafkaTemplate().send(TOPIC, message);
+        future.whenComplete((result, ex) -> {
+            if (ex == null) {
+                System.out.println("Sent message=[" + message +
+                        "] with offset=[" + result.getRecordMetadata().offset() + "]");
+            } else {
+                System.out.println("Unable to send message=[" +
+                        message + "] due to : " + ex.getMessage());
             }
         });
     }

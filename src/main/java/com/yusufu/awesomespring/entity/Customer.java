@@ -1,8 +1,8 @@
 package com.yusufu.awesomespring.entity;
 
+import jakarta.persistence.*;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
-import javax.persistence.*;
 
 @Table(name = "customer")
 @Entity

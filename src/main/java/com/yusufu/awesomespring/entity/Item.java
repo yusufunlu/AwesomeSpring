@@ -2,7 +2,7 @@ package com.yusufu.awesomespring.entity;
 
 import lombok.*;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 
 @Table(name = "item")
 @Entity
