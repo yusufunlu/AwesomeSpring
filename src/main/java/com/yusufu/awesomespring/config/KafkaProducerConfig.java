@@ -26,6 +26,7 @@ public class KafkaProducerConfig {
     @Bean
     public Map<String, Object> producerConfiguration() {
         Map<String, Object> properties = new HashMap<>(kafkaProperties.buildProducerProperties());
+        //No need those since we set from yaml
         properties.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
         properties.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
         return properties;
@@ -46,6 +47,7 @@ public class KafkaProducerConfig {
 
         return new NewTopic(TOPIC,3,(short) 1);
     }
+
 
     public void sendMessage(String message){
 

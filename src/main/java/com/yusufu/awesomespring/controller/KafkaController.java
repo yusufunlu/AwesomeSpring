@@ -2,10 +2,12 @@ package com.yusufu.awesomespring.controller;
 
 import com.yusufu.awesomespring.config.KafkaConsumerConfig;
 import com.yusufu.awesomespring.config.KafkaProducerConfig;
+import org.apache.kafka.clients.admin.TopicDescription;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.kafka.core.KafkaAdmin;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.Map;
 
 
 @RestController
@@ -15,10 +17,20 @@ public class KafkaController {
     @Autowired
     private KafkaProducerConfig kafkaProducerConfig;
 
-    @RequestMapping(value = "/{message}")
+    @Autowired
+    private KafkaAdmin kafkaAdmin;
+
+    @GetMapping(value = "/{message}")
     public String index(@PathVariable String message) {
 
         kafkaProducerConfig.sendMessage(message);
         return "Hello World";
+    }
+
+
+    @PostMapping(value = "/describeTopics")
+    public String describeTopics(@RequestBody String topic) {
+
+        return kafkaAdmin.describeTopics(topic).get(topic).toString();
     }
 }
