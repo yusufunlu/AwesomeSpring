@@ -16,6 +16,11 @@ Topic: __consumer_offsets       TopicId: dlBCvpYrTm2JtvelGFknvA PartitionCount: 
 Topic: __consumer_offsets       Partition: 0    Leader: 1001    Replicas: 1001  Isr: 1001
 ...
 
+If we restart the java instance
+[Consumer clientId=consumer-group_id-1, groupId=group_id] Found no committed offset for partition test_topic-2
+[Consumer clientId=consumer-group_id-1, groupId=group_id] Found no committed offset for partition test_topic-0
+[Consumer clientId=consumer-group_id-1, groupId=group_id] Setting offset for partition test_topic-1 to the committed offset FetchPosition{offset=6,...
+
 ### Implement Jaas and security in kafka
 ### CompletableFuture and log 
 ### Use sl4j and log4j, arrange log appenders

@@ -25,14 +25,10 @@ spring:
         bootstrap-servers: localhost:9092
         consumer:
             bootstrap-servers: localhost:9092
-            group-id: group_id
+            group-id: yusufu_group_id
             auto-offset-reset: earliest
-            key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
-            value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
         producer:
             bootstrap-servers: localhost:9092
-            key-serializer: org.apache.kafka.common.serialization.StringSerializer
-            value-serializer: org.apache.kafka.common.serialization.StringSerializer
 
 springdoc:
     swagger-ui:
@@ -50,3 +46,7 @@ logging:
         org.hibernate: ERROR
         org.apache.http: INFO
         org.apache.kafka: INFO
+
+yusufu:
+    kafka:
+        topic: topic0

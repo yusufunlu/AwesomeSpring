@@ -20,21 +20,14 @@ public class KafkaController {
     @Autowired
     private KafkaAdmin kafkaAdmin;
 
-    @GetMapping(value = "/{message}")
-    public String send(@PathVariable String message) {
+    @GetMapping(value = "/send")
+    public String send(@RequestParam(value = "topic", required = false) String topic,
+                       @RequestParam(value = "key", required = false) String key,
+                       @RequestParam(value = "message", required = false) String message) {
 
-        kafkaProducerConfig.sendMessage(message);
+        kafkaProducerConfig.send(topic,key,message);
         return "Hello World";
     }
-
-    @GetMapping(value = "/asyncSend/{message}")
-    public String asyncSend(@PathVariable String message) {
-
-        kafkaProducerConfig.asyncSend(message);
-        return "Hello World";
-    }
-
-
     @PostMapping(value = "/describeTopics")
     public String describeTopics(@RequestBody String topic) {
 
