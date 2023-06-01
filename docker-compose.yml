@@ -12,3 +12,34 @@ services:
       KAFKA_ADVERTISED_HOST_NAME: 127.0.0.1
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
       #KAFKA_CREATE_TOPICS: "test_topic:1:1"
+  prometheus:
+    image: prom/prometheus
+    networks:
+      yusufu_dashboard_dev:
+    container_name: prometheus
+    volumes:
+      - ./env/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+      - ./env/prometheus/alerts.yml:/etc/prometheus/alerts.yml
+    ports:
+      - 9090:9090
+
+  grafana:
+    image: grafana/grafana
+    container_name: grafana
+    ports:
+      - 3000:3000
+    environment:
+      - GF_SECURITY_ADMIN_USER=${ADMIN_USER}
+      - GF_SECURITY_ADMIN_PASSWORD=${ADMIN_PASSWORD}
+      - GF_USERS_ALLOW_SIGN_UP=false
+    networks:
+      yusufu_dashboard_dev:
+    volumes:
+      - ./env/grafana/provisioning:/etc/grafana/provisioning
+      # Map to different folders to prevent name collision.
+      - ./tests/Prometheus/dashboard_compiled.json:/usr/lib/dashboards/Prometheus-common/dashboard.json
+      - ./tests/Prometheus/dashboard_static_compiled.json:/usr/lib/dashboards/Prometheus-static/dashboard.json
+      - ./tests/Prometheus/dashboard_static_with_instance_variable_compiled.json:/usr/lib/dashboards/Prometheus-static-var/dashboard.json
+networks:
+  yusufu_dashboard_dev:
+    driver: bridge

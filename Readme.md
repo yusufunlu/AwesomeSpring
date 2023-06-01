@@ -28,4 +28,17 @@ If we restart the java instance
 ### consider event sourcing and seperate listener and procesors
 ### seperate bl and spring boot, use JEE annotations in bl part
 ### distribute cache 
-### IAC, terraform 
+### IAC, terraform
+### Docker inspect for ip of containers
+### docker network settings dilemma between localhost <-> prometheus
+
+Swagger- Open Api : http://localhost:8080/swagger-ui/index.html
+Prometheus : http://localhost:9090/
+Prometheus Metrics: http://localhost:9090/metrics
+Grafana: http://localhost:3000/
+Actuator Prometheus data: http://localhost:8080/actuator/prometheus
+
+https://github.com/Einsteinish/Docker-Compose-Prometheus-and-Grafana/blob/master/docker-compose.yml
+https://github.com/tarantool/grafana-dashboard/blob/master/docker-compose.yml
+
+

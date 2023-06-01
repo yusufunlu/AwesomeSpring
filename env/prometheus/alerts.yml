@@ -1,0 +1,285 @@
+groups:
+  - name: common
+    rules:
+      # Alert for any instance that is unreachable by Prometheus for more than a minute.
+      - alert: InstanceDown
+        expr: up == 0
+        for: 1m
+        labels:
+          severity: page
+        annotations:
+          summary: "Instance '{{ $labels.instance }}' ('{{ $labels.job }}') down"
+          description: "'{{ $labels.instance }}' of job '{{ $labels.job }}' has been down for more than a minute."
+
+
+  - name: tarantool-common
+    rules:
+      # Warning for any instance that uses too much Lua runtime memory.
+      - alert: HighLuaMemoryWarning
+        expr: tnt_info_memory_lua >= (512 * 1024 * 1024)
+        for: 1m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Instance '{{ $labels.alias }}' ('{{ $labels.job }}') Lua runtime warning"
+          description: "'{{ $labels.alias }}' instance of job '{{ $labels.job }}' uses too much Lua memory
+        and may hit threshold soon."
+
+      # Alert for any instance that uses too much Lua runtime memory.
+      - alert: HighLuaMemory
+        expr: tnt_info_memory_lua >= (1024 * 1024 * 1024)
+        for: 1m
+        labels:
+          severity: page
+        annotations:
+          summary: "Instance '{{ $labels.alias }}' ('{{ $labels.job }}') Lua runtime alert"
+          description: "'{{ $labels.alias }}' instance of job '{{ $labels.job }}' uses too much Lua memory
+        and likely to hit threshold soon."
+
+      # Warning for any instance that have low remaining arena memory.
+      - alert: LowMemtxArenaRemainingWarning
+        expr: (tnt_slab_quota_used_ratio >= 80) and (tnt_slab_arena_used_ratio >= 80)
+        for: 1m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Instance '{{ $labels.alias }}' ('{{ $labels.job }}') low arena memory remaining"
+          description: "Low arena memory (tuples and indexes) remaining for '{{ $labels.alias }}' instance of job '{{ $labels.job }}'.
+        Consider increasing memtx_memory or number of storages in case of sharded data."
+
+      # Alert for any instance that have low remaining arena memory.
+      - alert: LowMemtxArenaRemaining
+        expr: (tnt_slab_quota_used_ratio >= 90) and (tnt_slab_arena_used_ratio >= 90)
+        for: 1m
+        labels:
+          severity: page
+        annotations:
+          summary: "Instance '{{ $labels.alias }}' ('{{ $labels.job }}') low arena memory remaining"
+          description: "Low arena memory (tuples and indexes) remaining for '{{ $labels.alias }}' instance of job '{{ $labels.job }}'.
+        You are likely to hit limit soon.
+        It is strongly recommended to increase memtx_memory or number of storages in case of sharded data."
+
+      # Warning for any instance that have low remaining items memory.
+      - alert: LowMemtxItemsRemainingWarning
+        expr: (tnt_slab_quota_used_ratio >= 80) and (tnt_slab_items_used_ratio >= 80)
+        for: 1m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Instance '{{ $labels.alias }}' ('{{ $labels.job }}') low items memory remaining"
+          description: "Low items memory (tuples) remaining for '{{ $labels.alias }}' instance of job '{{ $labels.job }}'.
+        Consider increasing memtx_memory or number of storages in case of sharded data."
+
+      # Alert for any instance that have low remaining arena memory.
+      - alert: LowMemtxItemsRemaining
+        expr: (tnt_slab_quota_used_ratio >= 90) and (tnt_slab_items_used_ratio >= 90)
+        for: 1m
+        labels:
+          severity: page
+        annotations:
+          summary: "Instance '{{ $labels.alias }}' ('{{ $labels.job }}') low items memory remaining"
+          description: "Low items memory (tuples) remaining for '{{ $labels.alias }}' instance of job '{{ $labels.job }}'.
+        You are likely to hit limit soon.
+        It is strongly recommended to increase memtx_memory or number of storages in case of sharded data."
+
+      # Warning for Cartridge warning issues.
+      - alert: CartridgeWarningIssues
+        expr: tnt_cartridge_issues{level="warning"} > 0
+        for: 1m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Instance '{{ $labels.alias }}' ('{{ $labels.job }}') has 'warning'-level Cartridge issues"
+          description: "Instance '{{ $labels.alias }}' of job '{{ $labels.job }}' has 'warning'-level Cartridge issues.
+        Possible reasons: high replication lag, replication long idle,
+        failover or switchover issues, clock issues, memory fragmentation,
+        configuration issues, alien members."
+
+      # Alert for Cartridge critical issues.
+      - alert: CartridgeCriticalIssues
+        expr: tnt_cartridge_issues{level="critical"} > 0
+        for: 1m
+        labels:
+          severity: page
+        annotations:
+          summary: "Instance '{{ $labels.alias }}' ('{{ $labels.job }}') has 'critical'-level Cartridge issues"
+          description: "Instance '{{ $labels.alias }}' of job '{{ $labels.job }}' has 'critical'-level Cartridge issues.
+        Possible reasons: replication process critical fail,
+        running out of available memory."
+
+      # Alert for Tarantool replication high lag (both for masters and replicas).
+      - alert: HighReplicationLag
+        expr: tnt_replication_lag > 1
+        for: 1m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Instance '{{ $labels.alias }}' ('{{ $labels.job }}') have high replication lag (id {{ $labels.id }})"
+          description: "Instance '{{ $labels.alias }}' of job '{{ $labels.job }}' have high replication lag
+        (id {{ $labels.id }}), check up your network and cluster state."
+
+      # Alert for Tarantool low vinyl engine regulator rate limit.
+      - alert: LowVinylRegulatorRateLimit
+        expr: tnt_vinyl_regulator_rate_limit < 100000
+        for: 1m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Instance '{{ $labels.alias }}' ('{{ $labels.job }}') have low vinyl regulator rate limit"
+          description: "Instance '{{ $labels.alias }}' of job '{{ $labels.job }}' have low vinyl engine regulator rate limit.
+        This indicates issues with the disk or the scheduler."
+
+      # Alert for Tarantool high vinyl transactions conflict rate.
+      - alert: HighVinylTxConflictRate
+        expr: rate(tnt_vinyl_tx_conflict[5m]) / rate(tnt_vinyl_tx_commit[5m]) > 0.05
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Instance '{{ $labels.alias }}' ('{{ $labels.job }}') have high vinyl tx conflict rate"
+          description: "Instance '{{ $labels.alias }}' of job '{{ $labels.job }}' have
+        high vinyl transactions conflict rate. It indicates that vinyl is not healthy."
+
+      # Alert for Tarantool high vinyl scheduler failed tasks rate.
+      - alert: HighVinylSchedulerFailedTasksRate
+        expr: rate(tnt_vinyl_scheduler_tasks{status="failed"}[5m]) > 0.1
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Instance '{{ $labels.alias }}' ('{{ $labels.job }}') have high vinyl scheduler failed tasks rate"
+          description: "Instance '{{ $labels.alias }}' of job '{{ $labels.job }}' have
+        high vinyl scheduler failed tasks rate."
+
+      # Alert for high duration of event loop iteration in Tarantool.
+      - alert: HighEVLoopTime
+        expr: tnt_ev_loop_time > 0.1
+        for: 1m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Instance '{{ $labels.alias }}' ('{{ $labels.job }}') event loop has high cycle duration"
+          description: "Instance '{{ $labels.alias }}' of job '{{ $labels.job }}' event loop has high cycle duration.
+        Some high loaded fiber has too little yields. It may be the reason of 'Too long WAL write' warnings."
+
+      # Alert for Tarantool replication not running.
+      - alert: ReplicationNotRunning
+        expr: tnt_replication_status == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Instance '{{ $labels.alias }}' ('{{ $labels.job }}') {{ $labels.stream }} (id {{ $labels.id }})
+        replication is not running"
+          description: "Instance '{{ $labels.alias }}' ('{{ $labels.job }}') {{ $labels.stream }} (id {{ $labels.id }})
+        replication is not running. Check Cartridge UI for details."
+
+
+  - name: tarantool-crud
+    rules:
+      # Alert for CRUD module request errors.
+      - alert: HighCRUDErrorRate
+        expr: rate(tnt_crud_stats_count{ job="tarantool", status="error" }[5m]) > 0.1
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Instance '{{ $labels.alias }}' ('{{ $labels.job }}') too many CRUD {{ $labels.operation }} errors."
+          description: "Too many {{ $labels.operation }} CRUD requests for '{{ $labels.name }}' space on
+        '{{ $labels.alias }}' instance of job '{{ $labels.job }}' get module error responses."
+
+      # Warning for CRUD module requests too long responses.
+      - alert: HighCRUDLatency
+        expr: tnt_crud_stats{ job="tarantool", quantile="0.99" } > 0.1
+        for: 1m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Instance '{{ $labels.alias }}' ('{{ $labels.job }}') too high CRUD {{ $labels.operation }} latency."
+          description: "Some {{ $labels.operation }} {{ $labels.status }} CRUD requests for '{{ $labels.name }}' space on
+        '{{ $labels.alias }}' instance of job '{{ $labels.job }}' are processed too long."
+
+      # Warning for too many map reduce CRUD module requests.
+      - alert: HighCRUDMapReduceRate
+        expr: rate(tnt_crud_map_reduces{ job="tarantool" }[5m]) > 0.1
+        for: 1m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Instance '{{ $labels.alias }}' ('{{ $labels.job }}') too many CRUD {{ $labels.operation }} map reduces."
+          description: "There are too many {{ $labels.operation }} CRUD map reduce requests for '{{ $labels.name }}' space on
+        '{{ $labels.alias }}' instance of job '{{ $labels.job }}'.
+        Check your request conditions or consider changing sharding schema."
+
+
+  - name: tarantool-business
+    rules:
+      # Warning for any endpoint of an instance in tarantool job that responds too long.
+      # Beware that metric name depends on name of the collector you use in HTTP metrics middleware
+      # and request depends on type of this collector.
+      # This example based on summary collector with default name.
+      - alert: HighHTTPLatency
+        expr: http_server_request_latency{ job="tarantool", quantile="0.99" } > 0.1
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Instance '{{ $labels.alias }}' ('{{ $labels.job }}') high HTTP latency"
+          description: "Some {{ $labels.method }} requests to {{ $labels.path }} path with {{ $labels.status }} response status
+        on '{{ $labels.alias }}' instance of job '{{ $labels.job }}' are processed too long."
+
+      # Alert for any endpoint of an instance in tarantool job that sends too much 4xx responses.
+      # Beware that metric name depends on name of the collector you use in HTTP metrics middleware
+      # and request depends on type of this collector.
+      # This example based on summary collector with default name.
+      - alert: HighInstanceHTTPClientErrorRate
+        expr: sum by (job, instance, method, path, alias) (rate(http_server_request_latency_count{ job="tarantool", status=~"^4\\d{2}$" }[5m])) > 10
+        for: 1m
+        labels:
+          severity: page
+        annotations:
+          summary: "Instance '{{ $labels.alias }}' ('{{ $labels.job }}') high rate of client error responses"
+          description: "Too many {{ $labels.method }} requests to {{ $labels.path }} path 
+        on '{{ $labels.alias }}' instance of job '{{ $labels.job }}' get client error (4xx) responses."
+
+      # Alert for any endpoint in tarantool job that sends too much 4xx responses (cluster overall).
+      # Beware that metric name depends on name of the collector you use in HTTP metrics middleware
+      # and request depends on type of this collector.
+      # This example based on summary collector with default name.
+      - alert: HighHTTPClientErrorRate
+        expr: sum by (job, method, path) (rate(http_server_request_latency_count{ job="tarantool", status=~"^4\\d{2}$" }[5m])) > 20
+        for: 1m
+        labels:
+          severity: page
+        annotations:
+          summary: "Job '{{ $labels.job }}' high rate of client error responses"
+          description: "Too many {{ $labels.method }} requests to {{ $labels.path }} path
+        on instances of job '{{ $labels.job }}' get client error (4xx) responses."
+
+      # Alert for any endpoint of an instance in tarantool job that sends 5xx responses.
+      # Beware that metric name depends on name of the collector you use in HTTP metrics middleware
+      # and request depends on type of this collector.
+      # This example based on summary collector with default name.
+      - alert: HighHTTPServerErrorRate
+        expr: sum by (job, instance, method, path, alias) (rate(http_server_request_latency_count{ job="tarantool", status=~"^5\\d{2}$" }[5m])) > 0
+        for: 1m
+        labels:
+          severity: page
+        annotations:
+          summary: "Instance '{{ $labels.alias }}' ('{{ $labels.job }}') server error responses"
+          description: "Some {{ $labels.method }} requests to {{ $labels.path }} path 
+        on '{{ $labels.alias }}' instance of job '{{ $labels.job }}' get server error (5xx) responses."
+
+      # Warning for any endpoint of a router instance (with "router" in alias) in tarantool job that gets too little requests.
+      # Beware that metric name depends on name of the collector you use in HTTP metrics middleware
+      # and request depends on type of this collector.
+      # This example based on summary collector with default name.
+      - alert: LowRouterHTTPRequestRate
+        expr: sum by (job, instance, alias) (rate(http_server_request_latency_count{ job="tarantool", alias=~"^.*router.*$" }[5m])) < 10
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Router '{{ $labels.alias }}' ('{{ $labels.job }}') low activity"
+          description: "Router '{{ $labels.alias }}' instance of job '{{ $labels.job }}' gets too little requests.
+        Please, check up your balancer middleware."

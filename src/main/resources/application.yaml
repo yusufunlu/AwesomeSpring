@@ -50,3 +50,14 @@ logging:
 yusufu:
     kafka:
         topic: topic0
+
+management:
+    endpoint:
+        metrics:
+            enabled: true
+        prometheus:
+            enabled: true
+    endpoints:
+        web:
+            exposure:
+                include: prometheus
